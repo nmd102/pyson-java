@@ -9,7 +9,6 @@ public class PysonReader {
      * Reads a file
      * @param filename the name of the file you would like to read
      * @return a list of strings, where each element is a line in the file,
-     *         if the file cannot be found it returns null
      **/
     private static ArrayList<String> readFile(String filename) {
         ArrayList<String> toReturn = new ArrayList<>();
@@ -36,12 +35,16 @@ public class PysonReader {
         ArrayList<String> file = readFile(filename);
         ArrayList<PysonEntry> toReturn = new ArrayList<>();
         for (String s : file) {
+            if(s.isEmpty()) continue;
             String[] temp = s.split(":");
-            for (int j = 3; j < temp.length; j++) {
-                temp[2] += ":" + temp[j];
+            try {
+                for (int j = 3; j < temp.length; j++) {
+                    temp[2] += ":" + temp[j];
+                }
+                temp = new String[]{temp[0], temp[1], temp[2]};
+            } catch (ArrayIndexOutOfBoundsException e) {
+                throw new RuntimeException("Invalid pyson format "+s);
             }
-            //TODO: Use System.arraycopy
-            temp = new String[]{temp[0], temp[1], temp[2]};
             String name = temp[0];
             String type;
             Object value;
