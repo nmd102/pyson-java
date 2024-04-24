@@ -1,3 +1,5 @@
+package pyson;
+
 /**
  * Pyson data object
  */
@@ -6,7 +8,7 @@ public class PysonEntry {
     public String type;
     public Object value;
     /**
-     * PysonEntry constructor
+     * pyson.PysonEntry constructor
      * @param name the name of the entry
      * @param type the type, either str, int, float, or list
      * @param value the actual value of the entry
@@ -17,7 +19,7 @@ public class PysonEntry {
         this.value = value;
     }
     /**
-     * PysonEntry constructor, but with type inference.
+     * pyson.PysonEntry constructor, but with type inference.
      * @param name the name of the entry
      * @param value the actual value
      */

@@ -4,13 +4,13 @@ A java implementation of pyson (original code [here](https://github.com/OmegaGod
 Because the original code was very poorly documented and my friends were peer pressuring me into making this
 ## Usage
 Eventually I will get a JAR, and then you will be able to add it to your project as a library, but for now copy
-`PysonEntry.java`, `PysonReader.java`, and `PysonWriter.java` into your project
+`pyson.PysonEntry.java`, `pyson.PysonReader.java`, and `PysonWriter.java` into your project
 ## Documentation
 _This is a short summary of the methods. To see more complete documentation look at the code comments_
 
-### PysonEntry object
-This object stores a pyson value. See `PysonEntry.java` for more documentation
+### pyson.PysonEntry object
+This object stores a pyson value. See `pyson.PysonEntry.java` for more documentation
 ### readPysonFile()
-Reads a pyson file at `filename` file. It returns a list of `PysonEntry` that consists of the values of the pyson file
+Reads a pyson file at `filename` file. It returns a list of `pyson.PysonEntry` that consists of the values of the pyson file
 ### addPysonEntry()
-Adds a pyson entry `content` to a pyson file at `filename`. `content` is a `PysonEntry` object that will be appended to the `filename` pyson file.
+Adds a pyson entry `content` to a pyson file at `filename`. `content` is a `pyson.PysonEntry` object that will be appended to the `filename` pyson file.
