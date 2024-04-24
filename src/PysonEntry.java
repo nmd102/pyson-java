@@ -1,5 +1,3 @@
-package pyson;
-
 /**
  * Pyson data object
  */
