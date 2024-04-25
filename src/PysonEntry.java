@@ -43,7 +43,7 @@ public class PysonEntry {
     public String toString() {
         String toReturn = this.name + ":" + this.type + ":";
         String value = switch (this.type) {
-            case "list" -> String.join("(*)", (String[])this.value);
+            case "list" -> String.join("␝", (String[])this.value);
             case "int", "float", "str" -> this.value.toString();
             default -> throw new RuntimeException("Unknown type: " + this.type);
         };

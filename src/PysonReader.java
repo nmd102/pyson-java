@@ -71,7 +71,7 @@ public class PysonReader {
                     yield "str";
                 }
                 case "list" -> {
-                    value = temp[2].split(Pattern.quote("(*)"));
+                    value = temp[2].split("␝");
                     yield "list";
                 }
                 default -> throw new TypeNotPresentException("Unknown type " + temp[1], null);
