@@ -57,4 +57,13 @@ public class Value {
     public boolean isList() {
         return this.type.equals(new Type("list"));
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Value) {
+            return this.toString().equals(obj.toString());
+        } else {
+            return false;
+        }
+    }
 }

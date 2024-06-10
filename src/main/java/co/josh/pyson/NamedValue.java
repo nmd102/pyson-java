@@ -53,4 +53,13 @@ public class NamedValue {
     public String toString() {
         return this.pysonStr();
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof NamedValue) {
+            return this.toString().equals(obj.toString());
+        } else {
+            return false;
+        }
+    }
 }

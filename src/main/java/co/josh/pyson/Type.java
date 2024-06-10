@@ -16,4 +16,13 @@ public class Type {
     public String toString() {
         return this.type;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Type) {
+            return this.toString().equals(obj.toString());
+        } else {
+            return false;
+        }
+    }
 }
