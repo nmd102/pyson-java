@@ -9,6 +9,11 @@ public class NamedValue {
         this.value = value;
     }
 
+    NamedValue(String name, Object value) {
+        this.name = name;
+        this.value = new Value(value);
+    }
+
     public String getName() {
         return name;
     }
@@ -31,8 +36,12 @@ public class NamedValue {
         return this.value.getTypeStr();
     }
 
-    public Value getValue() {
+    public Value getValueObj() {
         return value;
+    }
+
+    public Object getValue() {
+        return this.value.getValue();
     }
 
     public void setValue(Value value) {

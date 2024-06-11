@@ -2,7 +2,8 @@ package co.josh.pyson;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.Arrays;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Scanner;
 import java.util.regex.Pattern;
@@ -18,12 +19,17 @@ public class Pyson {
             }
             scanner.close();
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            if(filepath.startsWith("/") ||  filepath.startsWith("\\")) {
+                throw new RuntimeException("Could not find pyson file, you should remove the leading '" + filepath.charAt(0) + "'");
+            }
+            Path currentRelativePath = Paths.get("");
+            String s = currentRelativePath.toAbsolutePath().toString();
+            throw new RuntimeException("Could not find pyson file at " + s + "/" + filepath);
         }
         return sb.toString();
     }
     public static NamedValue parsePysonEntry(String data) {
-        if(Arrays.asList(data.split("")).contains("\n")) {
+        if(isInList(data.split(""), "\n")) {
             throw new RuntimeException("Pyson entries cannot contain newlines");
         }
         String[] temp = data.split(":", 3);
@@ -70,6 +76,14 @@ public class Pyson {
         }
         return map;
     }
+    static boolean isInList(String[] arr, String item) {
+        for (String s : arr) {
+            if (s.equals(item)) {
+                return true;
+            }
+        }
+        return false;
+    }
     public static NamedValue[] pysonFileToArray(String filepath) {
         return pysonToArray(readFile(filepath));
     }
@@ -77,7 +91,7 @@ public class Pyson {
         HashMap<String, NamedValue> map = parsePyson(data);
         HashMap<String, Value> result = new HashMap<>();
         for (String key : map.keySet()) {
-            result.put(key, map.get(key).getValue());
+            result.put(key, map.get(key).getValueObj());
         }
         return result;
     }
