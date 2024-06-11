@@ -9,7 +9,7 @@ public class NamedValue {
         this.value = value;
     }
 
-    NamedValue(String name, Object value) {
+    NamedValue(String name, Object value) throws InvalidPysonFormatException {
         this.name = name;
         this.value = new Value(value);
     }

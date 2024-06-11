@@ -4,7 +4,7 @@ public class Value {
     private final Object value;
     private final Type type;
 
-    Value(Object value) {
+    Value(Object value) throws InvalidPysonFormatException {
         if (value instanceof String) {
             this.type = new Type("str");
         } else if (value instanceof Integer) {
@@ -14,7 +14,7 @@ public class Value {
         } else if (value instanceof String[]) {
             this.type = new Type("list");
         } else {
-            throw new RuntimeException("Unsupported value type: " + value.getClass());
+            throw new InvalidPysonFormatException("Unsupported value type: " + value.getClass());
         }
         this.value = value;
     }
@@ -43,19 +43,39 @@ public class Value {
     }
 
     public boolean isInt() {
-        return this.type.equals(new Type("int"));
+        try {
+            return this.type.equals(new Type("int"));
+        } catch (InvalidPysonFormatException e) {
+            // This can't fail, so we are fine
+            return false;
+        }
     }
 
     public boolean isFloat() {
-        return this.type.equals(new Type("float"));
+        try {
+            return this.type.equals(new Type("float"));
+        } catch (InvalidPysonFormatException e) {
+            // This can't fail, so we are fine
+            return false;
+        }
     }
 
     public boolean isStr() {
-        return this.type.equals(new Type("str"));
+        try {
+            return this.type.equals(new Type("str"));
+        } catch (InvalidPysonFormatException e) {
+            // This can't fail, so we are fine
+            return false;
+        }
     }
 
     public boolean isList() {
-        return this.type.equals(new Type("list"));
+        try {
+            return this.type.equals(new Type("list"));
+        } catch (InvalidPysonFormatException e) {
+            // This can't fail, so we are fine
+            return false;
+        }
     }
 
     @Override

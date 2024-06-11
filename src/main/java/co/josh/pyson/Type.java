@@ -3,9 +3,9 @@ package co.josh.pyson;
 public class Type {
     private final String type;
 
-    public Type(String type) {
+    public Type(String type) throws InvalidPysonFormatException {
         if (!Pyson.isInList(new String[]{"int", "float", "str", "list"}, type)) {
-            throw new IllegalArgumentException("Invalid type: " + type);
+            throw new InvalidPysonFormatException("Invalid type: " + type);
         }
         this.type = type;
     }
