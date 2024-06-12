@@ -13,14 +13,10 @@ class TypeTest {
     }
 
     @Test
-    void testToString() {
-        try {
-            assertEquals("str", new Type("str").toString());
-            assertEquals("int", new Type("int").toString());
-            assertEquals("float", new Type("float").toString());
-            assertEquals("list", new Type("list").toString());
-        } catch (InvalidPysonFormatException e) {
-            throw new RuntimeException(e);
-        }
+    void testToString() throws InvalidPysonFormatException {
+        assertEquals("str", new Type("str").toString());
+        assertEquals("int", new Type("int").toString());
+        assertEquals("float", new Type("float").toString());
+        assertEquals("list", new Type("list").toString());
     }
 }

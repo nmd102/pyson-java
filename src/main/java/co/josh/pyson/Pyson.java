@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
 /**
  * Class for all the PYSON static methods.
  */
-public class Pyson {
+public final class Pyson {
 
     /**
      * Reads a text file to a string with the contents of the file
