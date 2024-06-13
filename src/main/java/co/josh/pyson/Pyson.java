@@ -8,18 +8,7 @@ import java.util.HashMap;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
-/**
- * Class for all the PYSON static methods.
- */
 public final class Pyson {
-
-    /**
-     * Reads a text file to a string with the contents of the file
-     *
-     * @param filepath The path to the filepath
-     * @return A string with the contents of the file
-     * @throws FileNotFoundException If the pyson file cannot be found
-     */
     private static String readFile(String filepath) throws FileNotFoundException {
         StringBuilder sb = new StringBuilder();
         try {
@@ -37,86 +26,7 @@ public final class Pyson {
         return sb.toString();
     }
 
-    /**
-     * Parses a single PYSON entry
-     *
-     * @param data The entry to be parsed
-     * @return a NamedValue object containing the parsed entry
-     * @throws InvalidPysonFormatException If the PYSON formatting of the entry is invalid
-     */
-    public static NamedValue parsePysonEntry(String data) throws InvalidPysonFormatException {
-        if (isInList(data.split(""), "\n")) {
-            throw new InvalidPysonFormatException("Pyson entries cannot contain newlines");
-        }
-        String[] temp = data.split(":", 3);
-        if (temp.length < 3) {
-            throw new InvalidPysonFormatException("Pyson entry contains invalid format (not enough colons found)");
-        }
-        String name = temp[0];
-        String type = temp[1];
-        Object value = switch (type) {
-            case "int" -> Integer.parseInt(temp[2]);
-            case "float" -> Float.parseFloat(temp[2]);
-            case "str" -> temp[2];
-            case "list" -> {
-                String[] list = temp[2].split(Pattern.quote("(*)"));
-                if (temp[2].endsWith("(*)")) {
-                    String[] newList = new String[list.length + 1];
-                    System.arraycopy(list, 0, newList, 0, list.length);
-                    newList[list.length] = "";
-                    yield newList;
-                } else {
-                    yield list;
-                }
-            }
-            default -> throw new InvalidPysonFormatException("Invalid pyson type " + type);
-        };
-        return new NamedValue(name, new Value(value));
-    }
-
-    /**
-     * Parses multiple PYSON entries to an array of NamedValue objects
-     *
-     * @param data the PYSON entries to be parsed, seperated by newlines
-     * @return An array of NamedValue objects with the parsed PYSON
-     * @throws InvalidPysonFormatException If the PYSON data contains an invalid format
-     */
-    public static NamedValue[] pysonToArray(String data) throws InvalidPysonFormatException {
-        return parsePyson(data).values().toArray(new NamedValue[0]);
-    }
-
-    /**
-     * Method that drives the pysonToArray and pysonToMap methods
-     *
-     * @param data the PYSON data to be parsed
-     * @return A HashMap with the names of the entries as the keys,and the corresponding NamedValue objects as the values
-     * @throws InvalidPysonFormatException If the PYSON format is invalid
-     */
-    static HashMap<String, NamedValue> parsePyson(String data) throws InvalidPysonFormatException {
-        String[] entries = data.split("\n");
-        HashMap<String, NamedValue> map = new HashMap<>();
-        for (String s : entries) {
-            if (s.isEmpty()) {
-                continue;
-            }
-            NamedValue entry = parsePysonEntry(s);
-            int before = map.size();
-            map.put(entry.getName(), entry);
-            if (before == map.size()) {
-                throw new InvalidPysonFormatException("Duplicates found in pyson data");
-            }
-        }
-        return map;
-    }
-
-    /**
-     * Checks if a String is in an array of Strings
-     *
-     * @param arr  the array of Strings to be checked
-     * @param item the item to check for
-     * @return true if the item is found, otherwise false
-     */
-    static boolean isInList(String[] arr, String item) {
+    private static boolean isInList(String[] arr, String item) {
         for (String s : arr) {
             if (s.equals(item)) {
                 return true;
@@ -125,52 +35,69 @@ public final class Pyson {
         return false;
     }
 
-    /**
-     * Parses a PYSON file into an array of NamedValue objects
-     *
-     * @param filepath the filepath to the pyson file
-     * @return an array of NamedValue objects containing the parsed PYSON
-     * @throws FileNotFoundException       if the pyson file cannot be found
-     * @throws InvalidPysonFormatException if the pyson file contains invalid pyson formatting
-     */
-    public static NamedValue[] pysonFileToArray(String filepath) throws FileNotFoundException, InvalidPysonFormatException {
+    public static NamedValue parsePysonEntry(String entry) throws InvalidPysonFormatException, NumberFormatException {
+        if (isInList(entry.split(""), "\n")) {
+            throw new InvalidPysonFormatException("A PYSON entry cannot contain a newline");
+        }
+        String[] data = entry.split(":", 3);
+        if (data.length != 3) {
+            throw new InvalidPysonFormatException("Not enough colons found it pyson entry (expected 3, found" + (data.length-1) +")");
+        }
+        String name = data[0];
+        Type type = Type.getEnum(data[1]);
+        Object value = switch (type) {
+            case Int -> Integer.parseInt(data[2]);
+            case Float -> Float.parseFloat(data[2]);
+            case Str -> data[2];
+            case List -> {
+                String[] split = data[2].split(Pattern.quote("(*)"));
+                if(data[2].endsWith("(*)")) {
+                    String[] newSplit = new String[split.length + 1];
+                    System.arraycopy(split, 0, newSplit, 0, split.length);
+                    newSplit[newSplit.length - 1] = "";
+                    yield newSplit;
+                } else {
+                    yield split;
+                }
+            }
+        };
+        return new NamedValue(name, value);
+    }
+
+    static HashMap<String, NamedValue> parsePyson(String data) throws InvalidPysonFormatException, NumberFormatException {
+        String[] split = data.split("\n");
+        HashMap<String, NamedValue> map = new HashMap<>();
+        for (String s: split) {
+            if(s.isEmpty()) continue;
+            NamedValue entry = parsePysonEntry(s);
+            int before = map.size();
+            map.put(entry.getName(), entry);
+            if (before == map.size()) throw new InvalidPysonFormatException("Duplicates found in PYSON data");
+        }
+        return map;
+    }
+
+    public static NamedValue[] pysonToArray(String data) throws InvalidPysonFormatException, NumberFormatException {
+        return parsePyson(data).values().toArray(new NamedValue[0]);
+    }
+
+    public static NamedValue[] pysonFileToArray(String filepath) throws InvalidPysonFormatException, NumberFormatException, FileNotFoundException {
         return pysonToArray(readFile(filepath));
     }
 
-    /**
-     * Parses PYSON data into a HashMap with the names as the keys and the corresponding Value object as the values
-     *
-     * @param data the PYSON data to be parsed
-     * @return a HashMap with the format String name: Value value
-     * @throws InvalidPysonFormatException if the Pyson data is invalid
-     */
-    public static HashMap<String, Value> pysonToMap(String data) throws InvalidPysonFormatException {
+    public static HashMap<String, Value> pysonToMap(String data) throws InvalidPysonFormatException, NumberFormatException {
         HashMap<String, NamedValue> map = parsePyson(data);
         HashMap<String, Value> result = new HashMap<>();
         for (String key : map.keySet()) {
-            result.put(key, map.get(key).getValueObj());
+            result.put(key, new Value(map.get(key).getValue()));
         }
         return result;
     }
 
-    /**
-     * Parses a PYSON file to a HashMap with the name as the key, and the corresponding Value object as the value
-     *
-     * @param filepath the path to the PYSON file
-     * @return a HashMap with the format String name: Value value
-     * @throws FileNotFoundException       if the pyson file cannot be found
-     * @throws InvalidPysonFormatException if the pyson file contains invalid pyson formatting
-     */
-    public static HashMap<String, Value> pysonFileToMap(String filepath) throws FileNotFoundException, InvalidPysonFormatException {
+    public static HashMap<String, Value> pysonFileToMap(String filepath) throws InvalidPysonFormatException, NumberFormatException, FileNotFoundException {
         return pysonToMap(readFile(filepath));
     }
 
-    /**
-     * Checks if a PYSON entry is valid or not
-     *
-     * @param entry is the entry to be checked
-     * @return true if the PYSON is valid, otherwise false
-     */
     public static boolean isValidPysonEntry(String entry) {
         try {
             parsePysonEntry(entry);
@@ -180,19 +107,10 @@ public final class Pyson {
         return true;
     }
 
-    /**
-     * Checks if PYSON is valid
-     *
-     * @param data is the PYSON data to check
-     * @return true if the PYSON is valid, otherwise false
-     */
     public static boolean isValidPyson(String data) {
-        String[] split = data.split("\n");
-        for (String s : split) {
-            if (s.isEmpty()) {
-                continue;
-            }
-            if (!isValidPysonEntry(s)) return false;
+        for(String s: data.split("\n")) {
+            if(s.isEmpty()) continue;
+            if(!isValidPysonEntry(s)) return false;
         }
         return true;
     }

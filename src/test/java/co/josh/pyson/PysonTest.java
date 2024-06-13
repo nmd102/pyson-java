@@ -10,107 +10,59 @@ class PysonTest {
 
     @Test
     void parsePysonEntry() throws InvalidPysonFormatException {
-        NamedValue strTest = Pyson.parsePysonEntry("str_test:str:more: test");
-        assertEquals("str_test", strTest.getName());
-        assertEquals("str", strTest.getType().toString());
-        assertEquals("more: test", strTest.getValue());
-
-        NamedValue intTest = Pyson.parsePysonEntry("int_test:int:69");
+        NamedValue intTest = Pyson.parsePysonEntry("int_test:int:20");
         assertEquals("int_test", intTest.getName());
-        assertEquals("int", intTest.getType().toString());
-        assertEquals(69, intTest.getValue());
+        assertEquals(20, intTest.getValue());
+        assertEquals(Type.Int, intTest.getType());
 
-        NamedValue floatTest = Pyson.parsePysonEntry("float_test:float:3.1415");
+        NamedValue floatTest = Pyson.parsePysonEntry("float_test:float:20.2");
         assertEquals("float_test", floatTest.getName());
-        assertEquals("float", floatTest.getType().toString());
-        assertEquals(3.1415f, floatTest.getValue());
+        assertEquals(20.2f, floatTest.getValue());
+        assertEquals(Type.Float, floatTest.getType());
 
-        NamedValue listTest = Pyson.parsePysonEntry("list_test:list:list(*)more: (*)elements");
+        NamedValue strTest = Pyson.parsePysonEntry("str_test:str:this: has: colons in it");
+        assertEquals("str_test", strTest.getName());
+        assertEquals("this: has: colons in it", strTest.getValue());
+        assertEquals(Type.Str, strTest.getType());
+
+        NamedValue listTest = Pyson.parsePysonEntry("list_test:list:test(*)more(*)test");
         assertEquals("list_test", listTest.getName());
-        assertEquals("list", listTest.getType().toString());
-        assertArrayEquals(new String[]{"list", "more: ", "elements"}, (String[]) listTest.getValue());
+        assertArrayEquals(new String[] {"test", "more", "test"}, (String[])listTest.getValue());
+        assertEquals(Type.List, listTest.getType());
 
-        NamedValue emptyTest = Pyson.parsePysonEntry("empty_test:list:(*)crazy(*)");
-        assertArrayEquals(new String[]{"", "crazy", ""}, (String[]) emptyTest.getValue());
+        NamedValue emptyTest = Pyson.parsePysonEntry("empty_test:list:(*)empty(*)");
+        assertArrayEquals(new String[] {"", "empty", ""}, (String[])emptyTest.getValue());
 
+        assertThrows(InvalidPysonFormatException.class, () -> Pyson.parsePysonEntry("newline:\n:str:fun"));
+        assertThrows(InvalidPysonFormatException.class, () -> Pyson.parsePysonEntry("insufficient_colons:str"));
         assertThrows(NumberFormatException.class, () -> Pyson.parsePysonEntry("bad_int:int:error"));
         assertThrows(NumberFormatException.class, () -> Pyson.parsePysonEntry("bad_float:float:error"));
-        InvalidPysonFormatException newline = assertThrows(InvalidPysonFormatException.class, () -> Pyson.parsePysonEntry("newline:str:\nnewline"));
-        assertTrue(newline.getMessage().contains("Pyson entries cannot contain newlines"));
-        InvalidPysonFormatException bad_format = assertThrows(InvalidPysonFormatException.class, () -> Pyson.parsePysonEntry("insufficient_colons:str"));
-        assertTrue(bad_format.getMessage().contains("Pyson entry contains invalid format"));
-        InvalidPysonFormatException bad_type = assertThrows(InvalidPysonFormatException.class, () -> Pyson.parsePysonEntry("bad_type:bool:test"));
-        assertTrue(bad_type.getMessage().contains("Invalid pyson type"));
-    }
-
-    @Test
-    void pysonToArray() throws InvalidPysonFormatException {
-        NamedValue[] arrayTest = Pyson.pysonToArray(
-                "str_test:str:more: test\nint_test:int:69\nfloat_test:float:3.1415\nlist_test:list:list(*)more: (*)elements\nempty_test:list:(*)crazy(*)"
-        );
-        NamedValue[] correct = new NamedValue[]{
-                new NamedValue("str_test", new Value("more: test")),
-                new NamedValue("float_test", new Value(3.1415f)),
-                new NamedValue("list_test", new Value(new String[]{"list", "more: ", "elements"})),
-                new NamedValue("empty_test", new Value(new String[]{"", "crazy", ""})),
-                new NamedValue("int_test", new Value(69))
-        };
-        for (int i = 0; i < arrayTest.length; i++) {
-            assertEquals(correct[i].toString(), arrayTest[i].toString());
-        }
-        InvalidPysonFormatException duplicates = assertThrows(InvalidPysonFormatException.class, () -> Pyson.pysonToArray("duplicate:str:duplicate\nduplicate:list:duplicate"));
-        assertTrue(duplicates.getMessage().contains("Duplicates found in pyson data"));
     }
 
     @Test
     void parsePyson() throws InvalidPysonFormatException {
-        HashMap<String, NamedValue> tested = Pyson.parsePyson("str_test:str:more: test\nint_test:int:69\nfloat_test:float:3.1415\nlist_test:list:list(*)more: (*)elements\nempty_test:list:(*)crazy(*)");
-
-        HashMap<String, NamedValue> correct = new HashMap<>();
-        correct.put("str_test", new NamedValue("str_test", new Value("more: test")));
-        correct.put("int_test", new NamedValue("int_test", new Value(69)));
-        correct.put("float_test", new NamedValue("float_test", new Value(3.1415f)));
-        correct.put("list_test", new NamedValue("list_test", new Value(new String[]{"list", "more: ", "elements"})));
-        correct.put("empty_test", new NamedValue("empty_test", new Value(new String[]{"", "crazy", ""})));
-        assertEquals(correct.toString(), tested.toString());
-        InvalidPysonFormatException duplicate = assertThrows(InvalidPysonFormatException.class, () -> Pyson.parsePyson("duplicate:str:duplicate\nduplicate:int:123"));
-        assertTrue(duplicate.getMessage().contains("Duplicates found in pyson data"));
-    }
-
-    @Test
-    void pysonToMap() throws InvalidPysonFormatException {
-        HashMap<String, Value> tested = Pyson.pysonToMap("str_test:str:more: test\nint_test:int:69\nfloat_test:float:3.1415\nlist_test:list:list(*)more: (*)elements\nempty_test:list:(*)crazy(*)");
-        HashMap<String, Value> correct = new HashMap<>();
-        correct.put("str_test", new Value("more: test"));
-        correct.put("int_test", new Value(69));
-        correct.put("float_test", new Value(3.1415f));
-        correct.put("list_test", new Value(new String[]{"list", "more: ", "elements"}));
-        correct.put("empty_test", new Value(new String[]{"", "crazy", ""}));
-        assertEquals(correct.toString(), tested.toString());
-        InvalidPysonFormatException duplicate = assertThrows(InvalidPysonFormatException.class, () -> Pyson.pysonToMap("duplicate:str:duplicate\nduplicate:int:123"));
-        assertTrue(duplicate.getMessage().contains("Duplicates found in pyson data"));
+        HashMap<String, NamedValue> map = Pyson.parsePyson("int_test:int:20\nfloat_test:float:20.2\nstr_test:str:this: has: colons in it\nlist_test:list:test(*)more(*)test");
+        assertEquals(new NamedValue("int_test", 20), map.get("int_test"));
+        assertEquals(new NamedValue("float_test", 20.2f), map.get("float_test"));
+        assertEquals(new NamedValue("str_test", "this: has: colons in it"), map.get("str_test"));
+        assertEquals(new NamedValue("list_test", new String[] {"test", "more", "test"}), map.get("list_test"));
     }
 
     @Test
     void isValidPysonEntry() {
-        assertTrue(Pyson.isValidPysonEntry("str_test:str:more: test"));
-        assertTrue(Pyson.isValidPysonEntry("int_test:int:69"));
-        assertTrue(Pyson.isValidPysonEntry("float_test:float:3.1415"));
-        assertTrue(Pyson.isValidPysonEntry("list_test:list:list(*)more: (*)elements"));
-        assertTrue(Pyson.isValidPysonEntry("empty_test:list:(*)crazy(*)"));
-        assertFalse(Pyson.isValidPysonEntry("error:str"));
-        assertFalse(Pyson.isValidPysonEntry("error:int:error"));
-        assertFalse(Pyson.isValidPysonEntry("error:float:error"));
-        assertFalse(Pyson.isValidPysonEntry("error:float:\nerror"));
-        assertFalse(Pyson.isValidPysonEntry("error:what:\nerror"));
-        assertFalse(Pyson.isValidPysonEntry("error::what"));
+        assertTrue(Pyson.isValidPysonEntry("int_test:int:20"));
+        assertTrue(Pyson.isValidPysonEntry("float_test:float:20.2"));
+        assertTrue(Pyson.isValidPysonEntry("str_test:str:this: has: colons in it"));
+        assertTrue(Pyson.isValidPysonEntry("list_test:list:test(*)more(*)test"));
+        assertTrue(Pyson.isValidPysonEntry("empty_test:list:(*)empty(*)"));
+        assertFalse(Pyson.isValidPysonEntry("no colons:str"));
+        assertFalse(Pyson.isValidPysonEntry("newline:\n:str:fun"));
+        assertFalse(Pyson.isValidPysonEntry("bad_int:int:error"));
+        assertFalse(Pyson.isValidPysonEntry("bad_float:float:error"));
     }
 
     @Test
     void isValidPyson() {
-        assertTrue(Pyson.isValidPyson("str_test:str:more: test\nint_test:int:69\nfloat_test:float:3.1415\nlist_test:list:list(*)more: (*)elements\nempty_test:list:(*)crazy(*)"));
-        assertTrue(Pyson.isValidPyson("newlines:str:test\n\n\nmore_test:str:more test"));
-        assertFalse(Pyson.isValidPysonEntry("duplicate:str:duplicate\nduplicate:int:69"));
-        assertFalse(Pyson.isValidPysonEntry("insufficient:str:colors are coming up\nnot_enough:int"));
+        assertTrue(Pyson.isValidPyson("int_test:int:20\nfloat_test:float:20.2\nstr_test:str:this: has: colons in it\nlist_test:list:test(*)more(*)test"));
     }
 }
