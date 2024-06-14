@@ -4,6 +4,9 @@ public class Value {
     protected Type type;
     protected Object value;
     public Value(Object value) throws InvalidPysonFormatException {
+        if (value == null) {
+            throw new NullPointerException("Value cannot be null");
+        }
         this.type = switch (value) {
             case String _ -> Type.Str;
             case Integer _ -> Type.Int;

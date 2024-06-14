@@ -4,6 +4,9 @@ public class NamedValue extends Value {
     private String name;
     NamedValue(String name, Object value) throws InvalidPysonFormatException {
         super(value);
+        if (name == null) {
+            throw new NullPointerException("Name cannot be null");
+        }
         this.name = name;
     }
 

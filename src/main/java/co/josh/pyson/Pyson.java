@@ -36,12 +36,15 @@ public final class Pyson {
     }
 
     public static NamedValue parsePysonEntry(String entry) throws InvalidPysonFormatException, NumberFormatException {
+        if (entry == null) {
+            throw new NullPointerException("Entry cannot be null");
+        }
         if (isInList(entry.split(""), "\n")) {
             throw new InvalidPysonFormatException("A PYSON entry cannot contain a newline");
         }
         String[] data = entry.split(":", 3);
         if (data.length != 3) {
-            throw new InvalidPysonFormatException("Not enough colons found it pyson entry (expected 3, found" + (data.length-1) +")");
+            throw new InvalidPysonFormatException("Not enough colons found it pyson entry (expected 3, found" + (data.length-1) +" colons)");
         }
         String name = data[0];
         Type type = Type.getEnum(data[1]);
@@ -65,6 +68,9 @@ public final class Pyson {
     }
 
     static HashMap<String, NamedValue> parsePyson(String data) throws InvalidPysonFormatException, NumberFormatException {
+        if (data == null) {
+            throw new NullPointerException("Data cannot be null");
+        }
         String[] split = data.split("\n");
         HashMap<String, NamedValue> map = new HashMap<>();
         for (String s: split) {
